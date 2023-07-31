@@ -6,6 +6,10 @@ run: build
 
 clean: 
 	@rm ./bin/app
+	@bash ./scripts/setups.sh -c
+
+setup:
+	@bash ./scripts/setups.sh -s
 
 test:
 	@go test ./server
