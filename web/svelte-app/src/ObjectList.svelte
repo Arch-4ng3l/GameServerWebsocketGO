@@ -1,102 +1,149 @@
 <script>
-    import { writable } from "svelte/store"
-    let object = {
-        name: "Test",
-        x: 0,
-        y: 0,
-        z: 0,
-    };
-    let player = {
-        name: "Player",
-        x: 0,
-        y: 0,
-        z: 0,
-    };
-    let objects = writable([]);
-    let socket = new WebSocket("ws://localhost:3000/api/");
+import { writable } from "svelte/store"
+let object = {
+name: "Test",
+      x: 0,
+      y: 0,
+      z: 0,
+};
+let player = {
+name: "Web",
+      x: 0,
+      y: 0,
+      z: 0,
+};
+let objects = writable([]);
+export let socket;
 
-    let jsonPlayer = JSON.stringify(player);
-    socket.onmessage = (event) => {
-        console.log(event.data);
-        let obj = JSON.parse(event.data);
-        objects.set([]);
+socket.onmessage = (event) => {
+    let obj = JSON.parse(event.data);
+    objects.set([]);
+    try {
         obj.forEach(element => {
-            if (element.name !== "") {
+                if (element.name !== "") {
                 objects.update(arr => [...arr, element])
-            }
-        }
-        );
+                }
+        });
     }
-    function fetchObjects() {
-        socket.send(jsonPlayer);
+    catch(e) {
+        return;
     }
+}
+function fetchObjects() {
+    let jsonPlayer = JSON.stringify(player);
+    socket.send(jsonPlayer);
+}
 
-    function sendObject() {
-        let name = document.getElementById("name").value;
-        let x = document.getElementById("x").value;
-        let y = document.getElementById("y").value;
-        let z = document.getElementById("z").value;
-        if (name === "") {
-            return
-        }
-        console.log(name);
-        object.name = name;
-        object.x = parseFloat(x);
-        object.y = parseFloat(y);
-        object.z = parseFloat(z);
-        let jsonObj = JSON.stringify(object);
-        socket.send(jsonObj); 
-        fetchObjects();
+function sendObject() {
+    let name = document.getElementById("name").value;
+    let x = document.getElementById("x").value;
+    let y = document.getElementById("y").value;
+    let z = document.getElementById("z").value;
+    if (name === "") {
+        return
     }
+    object.name = name;
+    object.x = parseFloat(x);
+    object.y = parseFloat(y);
+    object.z = parseFloat(z);
+    let jsonObj = JSON.stringify(object);
+    socket.send(jsonObj); 
+    fetchObjects();
+}
+
+function goForward() {
+    player.x += 20;
+    fetchObjects();
+}
+function goBack() {
+    if (player.x - 20 < 0) {
+        player.x = 0;
+    } else {
+        player.x -= 20;
+    }
+    fetchObjects();
+}
 
 </script>
 
 
 <div>
-    <label for="">Name: </label>
-    <input name="name" type="text" id="name"/>
+<label for="">Name: </label>
+<input name="name" type="text" id="name"/>
 
-    <label for="x">X: </label>
-    <input name="x" type="number" id="x" value="0"/>
+<label for="x">X: </label>
+<input name="x" type="text" id="x" value="0"/>
 
-    <label for="y">Y: </label>
-    <input name="y" type="number" id="y" value="0"/>
+<label for="y">Y: </label>
+<input name="y" type="text" id="y" value="0"/>
 
-    <label for="z">Z: </label>
-    <input name="z" type="number" id="z" value="0"/>
-    <br>
-    <button on:click={sendObject} value="send">send</button>
-    <button on:click={fetchObjects} value="fetch">fetch</button>
-    <div class="list">
-    {#each $objects as {name, x, y, z}}
-        <div class="obj">
-            <h2>{name}</h2>
-            <p>x : {x}</p>
-            <p>y : {y}</p>
-            <p>z : {z}</p>
-        </div>
-        <br>
-        <br>
-    {/each}
-    </div>
+<label for="z">Z: </label>
+<input name="z" type="text" id="z" value="0"/>
+<br>
+<button on:click={sendObject} class="send" value="send">send</button>
+<br>
+<button on:click={goBack} class="arrow">⬅</button>
+<button on:click={goForward} class="arrow">➡</button>
+<div class="list">
+
+{#each $objects as {name, x, y, z}}
+<div class="obj">
+
+<h2>{name}</h2>
+<p>x : {x}</p>
+<p>y : {y}</p>
+<p>z : {z}</p>
+</div>
+<br>
+<br>
+{/each}
+</div>
 </div>
 
 <style>
-    .obj {
-        text-align: center;
-        padding: 10px;
-        width: 5em;
-        outline: 3px;
-        border-radius: 10px;
-        border-style:solid;
-        border-color:black;
-        margin: 10px;
-    }
-    .list {
-        padding: 10px;
-        display: flex;
-        justify-content: center;
-        right: 1em;
-        align-content: center;
-    }
+.obj {
+    text-align: center;
+    padding: 10px;
+    width: 5em;
+    outline: 3px;
+    border-radius: 10px;
+    border-style:solid;
+    border-color:black;
+    margin: 10px;
+}
+.list {
+    margin-left: 30%;
+    width: 40%;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    right: 1em;
+    align-content: center;
+}
+.arrow {
+    text-align: center;
+    background: transparent;
+    border-radius: 10px;
+    transition: ease-in-out 0.2s;
+}
+.arrow:hover {
+    color: #ff3e00;
+    border-color: #ff3e00;
+}
+.send {
+    border-radius: 10px;
+    transition: ease-in-out 0.2s;
+}
+.send:hover {
+    border-color: #ff3e00;
+    color : #ff3e00;
+    font-weight: bold;
+}
+
+label {
+    font-size: 20px;
+    color: #ff3e00;
+    font-weight: bold;
+}
 </style>

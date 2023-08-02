@@ -100,3 +100,23 @@ func (psql *Postgres) UpdateObject(object *types.Object) error {
 
 	return err
 }
+
+func (psql *Postgres) GetObjectsWeb(startID int) ([]*types.Object, error) {
+	query := `
+		SELECT * FROM objects WHERE object_id >= $1 AND object_id <= $1 + 19
+	`
+	res, err := psql.DB.Query(query, startID)
+	if err != nil {
+		return nil, err
+	}
+	var objects []*types.Object
+
+	for res.Next() {
+		obj := types.Object{}
+		res.Scan(&startID, &obj.Name, &obj.X, &obj.Y, &obj.Z)
+
+		objects = append(objects, &obj)
+	}
+
+	return objects, nil
+}
