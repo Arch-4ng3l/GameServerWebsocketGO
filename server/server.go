@@ -9,6 +9,7 @@ import (
 
 	"github.com/Arch-4ng3l/GoServerHololens/storage"
 	"github.com/Arch-4ng3l/GoServerHololens/types"
+	"github.com/Arch-4ng3l/GoServerHololens/web"
 	"github.com/TwiN/go-color"
 	"golang.org/x/net/websocket"
 )
@@ -26,9 +27,11 @@ func NewServer(store storage.Storage) *Server {
 }
 
 func (s *Server) Run(addr string) {
+	webserver := web.NewWebServer(s.store)
+	webserver.Init()
 
-	http.Handle("/", websocket.Handler(s.handleConns))
-	http.HandleFunc("/assets", s.handleAssets)
+	http.Handle("/api/", websocket.Handler(s.handleConns))
+	http.HandleFunc("/api/assets", s.handleAssets)
 
 	fmt.Println("Listening on Address :" + addr)
 	http.ListenAndServe(addr, nil)
@@ -63,7 +66,7 @@ func (s *Server) handleConn(conn *websocket.Conn) error {
 	decoder := json.NewDecoder(conn)
 	encoder := json.NewEncoder(conn)
 
-	s.initConn(encoder, decoder)
+	//s.initConn(encoder, decoder)
 
 	object := &types.Object{}
 
@@ -73,9 +76,7 @@ func (s *Server) handleConn(conn *websocket.Conn) error {
 		if err = decoder.Decode(object); err != nil {
 			return err
 		}
-		fmt.Println(object)
 		if object.Name == "Player" {
-			fmt.Println("Got Player")
 			err = s.handlePlayer(object, encoder)
 
 		} else {
