@@ -12,3 +12,8 @@ type Object struct {
 type Setting struct {
 	RenderDistance float32 `json:"renderdistance"`
 }
+
+type User struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}

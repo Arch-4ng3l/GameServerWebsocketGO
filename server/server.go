@@ -9,8 +9,10 @@ import (
 
 	"github.com/Arch-4ng3l/GoServerHololens/storage"
 	"github.com/Arch-4ng3l/GoServerHololens/types"
+	"github.com/Arch-4ng3l/GoServerHololens/util"
 	"github.com/Arch-4ng3l/GoServerHololens/web"
 	"github.com/TwiN/go-color"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/net/websocket"
 )
 
@@ -24,7 +26,10 @@ type Conn struct {
 	Local  string `json:"local"`
 }
 
-func NewServer(store storage.Storage) *Server {
+var HomeDir string
+
+func NewServer(store storage.Storage, homeDir string) *Server {
+	HomeDir = homeDir
 	return &Server{
 		conns: make(map[*websocket.Conn]bool),
 		store: store,
@@ -32,15 +37,59 @@ func NewServer(store storage.Storage) *Server {
 }
 
 func (s *Server) Run(addr string) {
-	webserver := web.NewWebServer(s.store)
+	webserver := web.NewWebServer(s.store, HomeDir)
 	webserver.Init()
 
 	http.Handle("/api/", websocket.Handler(s.handleConns))
 	http.HandleFunc("/api/assets", s.handleAssets)
 	http.HandleFunc("/api/conns", s.connHandler)
+	http.HandleFunc("/api/login", s.handleLogin)
+	http.HandleFunc("/api/auth", s.handleAuth)
 
 	fmt.Println("Listening on Address :" + addr)
 	http.ListenAndServe(addr, nil)
+}
+
+func (s *Server) handleAuth(w http.ResponseWriter, r *http.Request) {
+	var tokenObj struct {
+		Token string `json:"token"`
+	}
+
+	json.NewDecoder(r.Body).Decode(&tokenObj)
+
+	fmt.Println(tokenObj.Token)
+
+	if s.AuthJWT(tokenObj.Token) {
+		w.WriteHeader(200)
+		return
+	}
+	w.WriteHeader(400)
+}
+
+func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
+	user := &types.User{}
+	err := json.NewDecoder(r.Body).Decode(user)
+	if err != nil {
+		w.WriteHeader(http.StatusTeapot)
+	}
+	user2 := s.store.GetUser(user.Username)
+	if user2 == nil {
+		w.WriteHeader(http.StatusTeapot)
+		return
+	}
+
+	hashPass := util.CreateHash(user.Password)
+	if hashPass != user2.Password || user.Username != user2.Username {
+		w.WriteHeader(http.StatusTeapot)
+		return
+	}
+
+	token, err := util.CreateJWT(user.Username, hashPass)
+	if err != nil {
+		return
+	}
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
 
 func (s *Server) connHandler(w http.ResponseWriter, r *http.Request) {
@@ -181,4 +230,21 @@ func (s *Server) handleWeb(startID int, encoder *json.Encoder) error {
 		return err
 	}
 	return encoder.Encode(objects)
+}
+
+func (s *Server) AuthJWT(tokenString string) bool {
+	token, err := util.ValidateJWT(tokenString)
+	if err != nil {
+		return false
+	}
+
+	claims := token.Claims.(jwt.MapClaims)
+
+	user2 := s.store.GetUser(claims["username"].(string))
+
+	if claims["username"] != user2.Username || claims["password"] != user2.Password {
+		return false
+	}
+
+	return true
 }

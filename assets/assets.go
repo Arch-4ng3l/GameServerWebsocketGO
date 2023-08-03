@@ -8,14 +8,15 @@ import (
 	"strings"
 )
 
-func Init() error {
+func Init(homeDir string) error {
 
 	archive, err := os.Create("assets.zip")
 
 	if err != nil {
 		return err
 	}
-	files, err := ioutil.ReadDir("./assets/")
+	path := homeDir + "/Hololens/assets/"
+	files, err := ioutil.ReadDir(path)
 
 	if err != nil {
 		return err
@@ -37,7 +38,7 @@ func Init() error {
 			return err
 		}
 
-		f, err := os.Open("./assets/" + name)
+		f, err := os.Open(path + name)
 		if err != nil {
 			return err
 		}

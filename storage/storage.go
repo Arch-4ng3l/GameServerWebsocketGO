@@ -6,4 +6,5 @@ type Storage interface {
 	GetObjects(*types.Object) ([]*types.Object, error)
 	UpdateObject(*types.Object) error
 	GetObjectsWeb(int) ([]*types.Object, error)
+	GetUser(string) *types.User
 }

@@ -52,14 +52,57 @@ func (psql *Postgres) Init() error {
 		z FLOAT4
 	);
 	`
+	query2 := `
+	CREATE TABLE IF NOT EXISTS users (
+		user_id serial PRIMARY KEY, 
+		username TEXT UNIQUE NOT NULL, 
+		password TEXT UNIQUE NOT NULL
+	);
+	`
+
+	query3 := `
+	INSERT INTO users (username, password)
+	VALUES($1, $2)
+	ON CONFLICT DO NOTHING
+	`
 
 	_, err := psql.DB.Exec(query)
 	if err != nil {
 		log.Panic(err)
 		return err
 	}
+
+	_, err = psql.DB.Exec(query2)
+	if err != nil {
+		log.Panic(err)
+		return err
+	}
+	_, err = psql.DB.Exec(query3, "admin", util.CreateHash("admin"))
+
+	if err != nil {
+		log.Panic(err)
+		return err
+	}
 	return nil
 
+}
+
+func (psql *Postgres) GetUser(username string) *types.User {
+	query := `
+	SELECT * FROM users WHERE username=$1
+	`
+
+	res, err := psql.DB.Query(query, username)
+	if err != nil {
+		return nil
+	}
+	user := &types.User{}
+	id := 0
+	for res.Next() {
+		res.Scan(&id, &user.Username, &user.Password)
+		return user
+	}
+	return nil
 }
 
 func (psql *Postgres) GetObjects(player *types.Object) ([]*types.Object, error) {
