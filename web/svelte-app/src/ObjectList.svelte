@@ -1,4 +1,5 @@
 <script>
+import { onMount } from "svelte";
 import { writable } from "svelte/store"
 let object = {
 name: "Test",
@@ -14,6 +15,14 @@ name: "Web",
 };
 let objects = writable([]);
 export let socket;
+
+onMount(() => {
+    if (socket.readyState !== 1) {
+        socket = new WebSocket("ws://localhost:3000/api/");
+    } else {
+        return;
+    }
+});
 
 socket.onmessage = (event) => {
     let obj = JSON.parse(event.data);
@@ -35,6 +44,7 @@ function fetchObjects() {
 }
 
 function sendObject() {
+    console.log(socket.readyState);
     let name = document.getElementById("name").value;
     let x = document.getElementById("x").value;
     let y = document.getElementById("y").value;
@@ -52,12 +62,17 @@ function sendObject() {
 }
 
 function goForward() {
-    player.x += 20;
-    fetchObjects();
+    if (player.x == 0) {
+        fetchObjects();
+        player.x += 20;
+    } else {
+        player.x += 20;
+        fetchObjects();
+    }
 }
 function goBack() {
     if (player.x - 20 < 0) {
-        player.x = 0;
+        player.x = 1;
     } else {
         player.x -= 20;
     }
@@ -69,16 +84,16 @@ function goBack() {
 
 <div>
 <label for="">Name: </label>
-<input name="name" type="text" id="name"/>
+<input name="name" type="text" id="name" class="in"/>
 
 <label for="x">X: </label>
-<input name="x" type="text" id="x" value="0"/>
+<input name="x" type="text" id="x" value="0" class="in"/>
 
 <label for="y">Y: </label>
-<input name="y" type="text" id="y" value="0"/>
+<input name="y" type="text" id="y" value="0" class="in"/>
 
 <label for="z">Z: </label>
-<input name="z" type="text" id="z" value="0"/>
+<input name="z" type="text" id="z" value="0" class="in"/>
 <br>
 <button on:click={sendObject} class="send" value="send">send</button>
 <br>
@@ -101,6 +116,13 @@ function goBack() {
 </div>
 
 <style>
+
+.in {
+    border-radius: 10px;
+}
+.in:hover {
+    border-color: #ff3e00;
+}
 .obj {
     text-align: center;
     padding: 10px;
@@ -130,6 +152,7 @@ function goBack() {
 .arrow:hover {
     color: #ff3e00;
     border-color: #ff3e00;
+    font-weight: bold;
 }
 .send {
     border-radius: 10px;

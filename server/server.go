@@ -37,10 +37,35 @@ func (s *Server) Run(addr string) {
 
 	http.Handle("/api/", websocket.Handler(s.handleConns))
 	http.HandleFunc("/api/assets", s.handleAssets)
-	http.HandleFunc("/api/conns", s.handleGetConns)
+	http.HandleFunc("/api/conns", s.connHandler)
 
 	fmt.Println("Listening on Address :" + addr)
 	http.ListenAndServe(addr, nil)
+}
+
+func (s *Server) connHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		s.handleGetConns(w, r)
+	case "POST":
+		s.handleCloseConn(w, r)
+	}
+}
+
+func (s *Server) handleCloseConn(w http.ResponseWriter, r *http.Request) {
+	connReq := &Conn{}
+	if err := json.NewDecoder(r.Body).Decode(connReq); err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	for conn := range s.conns {
+		if conn.RemoteAddr().String() == connReq.Remote {
+			w.WriteHeader(200)
+			s.closeConn(conn)
+		}
+	}
+
 }
 
 func (s *Server) handleGetConns(w http.ResponseWriter, r *http.Request) {
