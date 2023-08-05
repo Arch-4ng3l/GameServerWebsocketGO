@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/Arch-4ng3l/GoServerHololens/types"
 	"github.com/Arch-4ng3l/GoServerHololens/util"
@@ -11,12 +12,13 @@ import (
 )
 
 const (
-	host     = "localhost"
-	port     = 5432
-	user     = "moritz"
-	password = "postgres"
-	dbname   = "hololens"
+	host   = "localhost"
+	port   = 5432
+	dbname = "hololens"
 )
+
+var password = os.Getenv("PSQLPW")
+var user = os.Getenv("PSQLUN")
 
 type Postgres struct {
 	DB *sql.DB
@@ -29,11 +31,13 @@ func NewPostgres() *Postgres {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Panic(err)
+
 		return nil
 	}
 
 	if err := db.Ping(); err != nil {
 		log.Panic(err)
+
 		return nil
 	}
 
@@ -69,18 +73,21 @@ func (psql *Postgres) Init() error {
 	_, err := psql.DB.Exec(query)
 	if err != nil {
 		log.Panic(err)
+
 		return err
 	}
 
 	_, err = psql.DB.Exec(query2)
 	if err != nil {
 		log.Panic(err)
+
 		return err
 	}
 	_, err = psql.DB.Exec(query3, "admin", util.CreateHash("admin"))
 
 	if err != nil {
 		log.Panic(err)
+
 		return err
 	}
 	return nil
@@ -94,28 +101,31 @@ func (psql *Postgres) GetUser(username string) *types.User {
 
 	res, err := psql.DB.Query(query, username)
 	if err != nil {
+
 		return nil
 	}
 	user := &types.User{}
 	id := 0
 	for res.Next() {
 		res.Scan(&id, &user.Username, &user.Password)
+
 		return user
 	}
+
 	return nil
 }
 
-func (psql *Postgres) GetObjects(player *types.Object) ([]*types.Object, error) {
+func (psql *Postgres) GetObjects(out chan *types.Object, player *types.Object) error {
 
 	query := `SELECT * FROM objects`
 
 	rows, err := psql.DB.Query(query)
 	if err != nil {
-		return nil, err
+
+		return err
 	}
 
 	defer rows.Close()
-	var objects []*types.Object
 	id := 0
 	for rows.Next() {
 		object := types.Object{}
@@ -124,11 +134,13 @@ func (psql *Postgres) GetObjects(player *types.Object) ([]*types.Object, error) 
 			continue
 		}
 		if util.CalcDistance(player, &object) <= types.RenderDistance {
-			objects = append(objects, &object)
+			out <- &object
 		}
 	}
 
-	return objects, nil
+	close(out)
+
+	return nil
 }
 
 func (psql *Postgres) UpdateObject(object *types.Object) error {
@@ -150,6 +162,7 @@ func (psql *Postgres) GetObjectsWeb(startID int) ([]*types.Object, error) {
 	`
 	res, err := psql.DB.Query(query, startID)
 	if err != nil {
+
 		return nil, err
 	}
 	var objects []*types.Object

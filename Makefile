@@ -9,9 +9,10 @@ run: build
 	@./bin/app
 
 clean: 
-	@cd ./scripts && bash ./setups.sh -c
-	@rm -rf ./bin
-	@rm ./assets.zip
+	-@cd ./scripts && bash ./setups.sh -c
+	-@rm -rf ./bin
+	-@rm ./assets.zip
+	-@rm ./logs/*
 
 setup:
 	@bash ./scripts/setups.sh -s

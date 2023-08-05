@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Arch-4ng3l/GoServerHololens/storage"
@@ -22,7 +21,6 @@ func NewWebServer(store storage.Storage, homeDir string) *WebServer {
 
 func (s *WebServer) Init() {
 	path := HomeDir + "/Hololens/web/svelte-app/public"
-	fmt.Println(path)
 	fs := http.FileServer(http.Dir(path))
 
 	http.Handle("/", fs)

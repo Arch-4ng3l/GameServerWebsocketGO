@@ -47,6 +47,9 @@
 </script>
 
 <div>
+    <h2>Connections</h2>
+    <br>
+    <br>
     <button on:click={getConnections} class="btn" >Get Connections</button>
     <div class="list">
     {#each $conns as {remote, local}}

@@ -83,6 +83,9 @@ function goBack() {
 
 
 <div>
+<h2>Objects</h2>
+<br>
+<br>
 <label for="">Name: </label>
 <input name="name" type="text" id="name" class="in"/>
 

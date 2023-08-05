@@ -5,8 +5,10 @@
     import ObjectList from "./ObjectList.svelte";
     import ConnList from "./ConnList.svelte";
     import Signin from "./Signin.svelte";
+    import Assets from "./Assets.svelte";
+    import Logs from "./Logs.svelte";
     let socket;
-    let url = "/api/auth"
+    let url = "/api/auth";
 
     onMount(() => {
 
@@ -46,11 +48,25 @@
                     <h3>Object</h3>
                 </div>
                 </Link>
+
                 <Link to="/conn">
                 <div class="link">
                     <h3>Connections</h3>
                 </div>
                 </Link>
+
+                <Link to="/assets">
+                <div class="link">
+                    <h3>Assets</h3>
+                </div>
+                </Link>
+
+                <Link to="/logs">
+                <div class="link">
+                    <h3>Logs</h3>
+                </div>
+                </Link>
+
             </nav>
             <br>
             <button on:click={logOut} class="link">Log Out</button>
@@ -64,6 +80,8 @@
         </Route>
 
         <Route path="/conn" component={ConnList}/>
+        <Route path="/assets" component={Assets}/>
+        <Route path="/logs" component={Logs}/>
 
     {:else}
         <nav>

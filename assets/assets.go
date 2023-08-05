@@ -2,6 +2,7 @@ package assets
 
 import (
 	"archive/zip"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -9,16 +10,18 @@ import (
 )
 
 func Init(homeDir string) error {
-
+	fmt.Println("[*] Creating New Assets Zip File")
 	archive, err := os.Create("assets.zip")
 
 	if err != nil {
+
 		return err
 	}
 	path := homeDir + "/Hololens/assets/"
 	files, err := ioutil.ReadDir(path)
 
 	if err != nil {
+
 		return err
 	}
 
@@ -35,17 +38,20 @@ func Init(homeDir string) error {
 
 		w, err := zipWriter.Create("assets/" + name)
 		if err != nil {
+
 			return err
 		}
 
 		f, err := os.Open(path + name)
 		if err != nil {
+
 			return err
 		}
 		defer f.Close()
 
 		_, err = io.Copy(w, f)
 		if err != nil {
+
 			return err
 		}
 	}

@@ -3,15 +3,15 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"io"
 	"net/http"
-	"time"
+	"os"
 
+	"github.com/Arch-4ng3l/GoServerHololens/assets"
 	"github.com/Arch-4ng3l/GoServerHololens/storage"
 	"github.com/Arch-4ng3l/GoServerHololens/types"
 	"github.com/Arch-4ng3l/GoServerHololens/util"
 	"github.com/Arch-4ng3l/GoServerHololens/web"
-	"github.com/TwiN/go-color"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/net/websocket"
 )
@@ -29,7 +29,9 @@ type Conn struct {
 var HomeDir string
 
 func NewServer(store storage.Storage, homeDir string) *Server {
+
 	HomeDir = homeDir
+
 	return &Server{
 		conns: make(map[*websocket.Conn]bool),
 		store: store,
@@ -37,6 +39,7 @@ func NewServer(store storage.Storage, homeDir string) *Server {
 }
 
 func (s *Server) Run(addr string) {
+
 	webserver := web.NewWebServer(s.store, HomeDir)
 	webserver.Init()
 
@@ -51,22 +54,30 @@ func (s *Server) Run(addr string) {
 }
 
 func (s *Server) handleAuth(w http.ResponseWriter, r *http.Request) {
+
 	var tokenObj struct {
 		Token string `json:"token"`
 	}
 
 	json.NewDecoder(r.Body).Decode(&tokenObj)
 
-	fmt.Println(tokenObj.Token)
-
 	if s.AuthJWT(tokenObj.Token) {
 		w.WriteHeader(200)
+
 		return
 	}
 	w.WriteHeader(400)
+
 }
 
 func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+
+		return
+	}
+
 	user := &types.User{}
 	err := json.NewDecoder(r.Body).Decode(user)
 	if err != nil {
@@ -75,17 +86,20 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	user2 := s.store.GetUser(user.Username)
 	if user2 == nil {
 		w.WriteHeader(http.StatusTeapot)
+
 		return
 	}
 
 	hashPass := util.CreateHash(user.Password)
 	if hashPass != user2.Password || user.Username != user2.Username {
 		w.WriteHeader(http.StatusTeapot)
+
 		return
 	}
 
 	token, err := util.CreateJWT(user.Username, hashPass)
 	if err != nil {
+
 		return
 	}
 	w.WriteHeader(200)
@@ -93,6 +107,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) connHandler(w http.ResponseWriter, r *http.Request) {
+
 	switch r.Method {
 	case "GET":
 		s.handleGetConns(w, r)
@@ -104,7 +119,8 @@ func (s *Server) connHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleCloseConn(w http.ResponseWriter, r *http.Request) {
 	connReq := &Conn{}
 	if err := json.NewDecoder(r.Body).Decode(connReq); err != nil {
-		fmt.Println(err.Error())
+		util.PrintError(err)
+
 		return
 	}
 
@@ -118,6 +134,7 @@ func (s *Server) handleCloseConn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGetConns(w http.ResponseWriter, r *http.Request) {
+
 	var conns []Conn
 	for i := range s.conns {
 		conn := Conn{}
@@ -131,13 +148,45 @@ func (s *Server) handleGetConns(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAssets(w http.ResponseWriter, r *http.Request) {
+
 	switch r.Method {
 	case "GET":
 		s.handleGetAssets(w, r)
+	case "POST":
+		s.handleCreateAssets(w, r)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
+
 		return
 	}
+}
+
+func (s *Server) handleCreateAssets(w http.ResponseWriter, r *http.Request) {
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		util.PrintError(err)
+
+		return
+	}
+	defer file.Close()
+	writeFile, err := os.Create(HomeDir + "/Hololens/assets/" + header.Filename)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		util.PrintError(err)
+
+		return
+	}
+	if _, err := io.Copy(writeFile, file); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		util.PrintError(err)
+
+		return
+	}
+	w.WriteHeader(200)
+
+	assets.Init(HomeDir)
+
 }
 
 func (s *Server) handleGetAssets(w http.ResponseWriter, r *http.Request) {
@@ -145,17 +194,20 @@ func (s *Server) handleGetAssets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleConns(conn *websocket.Conn) {
+
 	defer conn.Close()
 
 	s.conns[conn] = true
-	fmt.Printf("%s:%s%s [+] New Connection%s => Connection Number %d\n", time.Now().Format(time.Kitchen), color.Green, color.Bold, color.Reset, len(s.conns))
+	str := fmt.Sprintf("New Connection => Connection Number %d", len(s.conns))
+	util.PrintLog(str)
 	err := s.handleConn(conn)
 	if err.Error() != "EOF" {
-		log.Println(time.Now().Format(time.Kitchen) + " " + color.Red + color.Bold + err.Error() + color.Reset)
+		util.PrintError(err)
 	}
 }
 
 func (s *Server) handleConn(conn *websocket.Conn) error {
+
 	var err error
 
 	decoder := json.NewDecoder(conn)
@@ -169,6 +221,7 @@ func (s *Server) handleConn(conn *websocket.Conn) error {
 
 	for {
 		if err = decoder.Decode(object); err != nil {
+
 			return err
 		}
 		if object.Name == "Player" {
@@ -181,6 +234,7 @@ func (s *Server) handleConn(conn *websocket.Conn) error {
 		}
 
 		if err != nil {
+
 			return err
 		}
 
@@ -189,9 +243,10 @@ func (s *Server) handleConn(conn *websocket.Conn) error {
 }
 
 func (s *Server) closeConn(conn *websocket.Conn) {
+
 	conn.Close()
 	delete(s.conns, conn)
-	fmt.Printf("%s:%s%s [-] Connection Closed%s\n", time.Now().Format(time.Kitchen), color.Red, color.Bold, color.Reset)
+	util.PrintLog("Connection Closed")
 }
 
 func (s *Server) initConn(encoder *json.Encoder, decoder *json.Decoder) error {
@@ -208,12 +263,16 @@ func (s *Server) initConn(encoder *json.Encoder, decoder *json.Decoder) error {
 }
 
 func (s *Server) handlePlayer(player *types.Object, encoder *json.Encoder) error {
-	objects, err := s.store.GetObjects(player)
-	if err != nil {
-		return err
+
+	objs := make(chan *types.Object)
+	go s.store.GetObjects(objs, player)
+	var objects []*types.Object
+
+	for obj := range objs {
+		objects = append(objects, obj)
 	}
 
-	err = encoder.Encode(objects)
+	err := encoder.Encode(objects)
 
 	return err
 }
@@ -229,10 +288,12 @@ func (s *Server) handleWeb(startID int, encoder *json.Encoder) error {
 	if err != nil {
 		return err
 	}
+
 	return encoder.Encode(objects)
 }
 
 func (s *Server) AuthJWT(tokenString string) bool {
+
 	token, err := util.ValidateJWT(tokenString)
 	if err != nil {
 		return false
