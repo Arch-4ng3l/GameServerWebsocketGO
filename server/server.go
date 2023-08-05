@@ -43,7 +43,7 @@ func (s *Server) Run(addr string) {
 	webserver := web.NewWebServer(s.store, HomeDir)
 	webserver.Init()
 
-	http.Handle("/api/", websocket.Handler(s.handleConns))
+	http.Handle("/api", websocket.Handler(s.handleConns))
 	http.HandleFunc("/api/assets", s.handleAssets)
 	http.HandleFunc("/api/conns", s.connHandler)
 	http.HandleFunc("/api/login", s.handleLogin)
@@ -267,8 +267,8 @@ func (s *Server) handlePlayer(player *types.Object, encoder *json.Encoder) error
 	objs := make(chan *types.Object)
 	go s.store.GetObjects(objs, player)
 	var objects []*types.Object
-
 	for obj := range objs {
+		fmt.Println(obj.Name)
 		objects = append(objects, obj)
 	}
 
@@ -278,6 +278,8 @@ func (s *Server) handlePlayer(player *types.Object, encoder *json.Encoder) error
 }
 
 func (s *Server) handleObject(object *types.Object) error {
+
+	fmt.Println(object.Name)
 
 	return s.store.UpdateObject(object)
 }

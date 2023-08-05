@@ -133,7 +133,12 @@ func (psql *Postgres) GetObjects(out chan *types.Object, player *types.Object) e
 		if err != nil {
 			continue
 		}
+
+		if object.Name == "" {
+			continue
+		}
 		if util.CalcDistance(player, &object) <= types.RenderDistance {
+
 			out <- &object
 		}
 	}

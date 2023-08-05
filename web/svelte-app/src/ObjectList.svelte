@@ -18,7 +18,7 @@ export let socket;
 
 onMount(() => {
     if (socket.readyState !== 1) {
-        socket = new WebSocket("ws://localhost:3000/api/");
+        socket = new WebSocket("ws://localhost:3000/api");
     } else {
         return;
     }

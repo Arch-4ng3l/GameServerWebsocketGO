@@ -12,7 +12,7 @@
 
     onMount(() => {
 
-        socket = new WebSocket("ws://localhost:3000/api/");
+        socket = new WebSocket("ws://localhost:3000/api");
         let token = getCookie("token");
         if (token === "") {
             return;
