@@ -190,6 +190,7 @@ func (s *Server) handleCreateAssets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGetAssets(w http.ResponseWriter, r *http.Request) {
+	util.PrintLog("Assets Request")
 	http.ServeFile(w, r, "assets.zip")
 }
 
@@ -268,7 +269,6 @@ func (s *Server) handlePlayer(player *types.Object, encoder *json.Encoder) error
 	go s.store.GetObjects(objs, player)
 	var objects []*types.Object
 	for obj := range objs {
-		fmt.Println(obj.Name)
 		objects = append(objects, obj)
 	}
 

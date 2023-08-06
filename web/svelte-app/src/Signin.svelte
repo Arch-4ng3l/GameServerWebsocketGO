@@ -31,23 +31,28 @@
 
 
 <div>
-    <h2>Sign In</h2>
-    <br>
-    <label for="username"><b>Username</b></label> 
-    <input class="in" id="un" type="text" name="username"/>
+    <h1>Login</h1>
     <br>
     <br>
-    <label for="passwd"><b>Password</b></label>
-    <input class="in" id="pw" type="text" name="passwd"/>
+    <div>
+        <label for="username"><b>Username</b></label> 
+        <input class="in" id="un" type="text" name="username"/>
+        <br>
+        <br>
+        <label for="passwd"><b>Password</b></label>
+        <input class="in" id="pw" type="password" name="passwd"/>
+    </div>
     <br>
     <br>
 
-    <button on:click={signIn} class="btn">Sign In</button>
+    <button on:click={signIn} class="btn"><b>Sign In</b></button>
 </div>
 
 
 <style>
-
+    div { 
+        align-items: center;
+    }
     .in {
         border-radius: 10px;
     }
@@ -55,6 +60,8 @@
         border-color: #ff3e00;
     }
     .btn {
+        width: 10%;
+        background: #454a4d;
         border-radius: 10px;     
     }
     .btn:hover {

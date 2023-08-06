@@ -9,10 +9,11 @@ run: build
 	@./bin/app
 
 clean: 
-	-@cd ./scripts && bash ./setups.sh -c
-	-@rm -rf ./bin
 	-@rm ./assets.zip
+	-@find ./assets -type f ! -name "*.go" -exec rm {} \;
 	-@rm ./logs/*
+	-@rm -rf ./bin
+	-@cd ./scripts && bash ./setups.sh -c
 
 setup:
 	@bash ./scripts/setups.sh -s

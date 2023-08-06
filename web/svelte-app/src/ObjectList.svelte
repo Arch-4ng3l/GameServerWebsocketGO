@@ -29,15 +29,16 @@ socket.onmessage = (event) => {
     objects.set([]);
     try {
         obj.forEach(element => {
-                if (element.name !== "") {
+            if (element.name !== "") {
                 objects.update(arr => [...arr, element])
-                }
+            }
         });
     }
     catch(e) {
         return;
     }
 }
+
 function fetchObjects() {
     let jsonPlayer = JSON.stringify(player);
     socket.send(jsonPlayer);

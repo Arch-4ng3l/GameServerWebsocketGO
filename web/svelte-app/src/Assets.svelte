@@ -13,6 +13,7 @@
             body: formData,
         })
         .then(response => {
+            fileIn.value = '';
             if (response.ok) {
                 console.log("success");
             }

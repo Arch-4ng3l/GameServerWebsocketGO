@@ -11,8 +11,12 @@
     let url = "/api/auth";
 
     onMount(() => {
+        if (socket === undefined) {
+            socket = new WebSocket("ws://localhost:3000/api");
+        } else if (socket.ReadyState !== 1) {
+            socket = new WebSocket("ws://localhost:3000/api");
+        }
 
-        socket = new WebSocket("ws://localhost:3000/api");
         let token = getCookie("token");
         if (token === "") {
             return;
@@ -31,16 +35,23 @@
     });
 
     function logOut() {
+        console.log("Log Out");
         $auth = false;
         setCookie("token", "");
-        socket.close();
+        try {
+            socket.close();
+        }
+        catch {
+
+        }
+        window.location.href = "/";
     }
 
 </script>
 
 <main>
+{#if $auth}
     <Router>
-    {#if $auth}
         <div class="navbar">
             <nav>
                 <Link to="/objects">
@@ -67,9 +78,11 @@
                 </div>
                 </Link>
 
+                <div class="link" on:click={logOut} on:keypress={logOut}> 
+                    <h3>Log Out</h3>
+                </div>
             </nav>
             <br>
-            <button on:click={logOut} class="link">Log Out</button>
 
         </div>
 
@@ -83,27 +96,39 @@
         <Route path="/assets" component={Assets}/>
         <Route path="/logs" component={Logs}/>
 
-    {:else}
-        <nav>
-            <Link to="/signin">
-            <div class="link">
-                <h2>Sign In</h2>
-            </div>
-            </Link>
-        </nav>
-
-        <Route path="/signin">
-
-            <br>
-            <br>
-            <Signin/>
-        </Route>
-
-    {/if}
     </Router>
+{:else}
+    <Signin/>
+
+{/if}
+    
 </main>
 
 <style>
+
+    .navbar {
+        border-radius: 10px;
+        overflow: hidden;
+        background-color: #333;
+    }
+    .link {
+        float: left;
+        color: #f2f2f2;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 17px;
+    }
+
+    .link:hover{
+        background-color: #ddd;
+        color: black;
+    }
+
+    .link:active {
+        background-color: #ff3e00;
+        color: white;
+    }
 
 	main {
 		text-align: center;
@@ -125,33 +150,4 @@
 		}
 	}
 
-    .navbar{
-        position: fixed;
-        display: flexbox;
-        top: 30%;
-        width: 300px;
-        height: auto;
-        padding: 0;
-        margin: 0;
-        z-index: 9;
-        overflow: hidden;
-        box-shadow: 0 8px 30px 0 rgba(0,0,0,0.3);
-        text-decoration: none;
-    }
-    .link {
-        text-transform: uppercase;
-        border-radius: 3px;
-        border-width: 1px;
-        border-style: solid;
-        color: black;
-        font-size: 2em;
-        text-decoration: none;
-        transition: ease-in-out 0.1s;
-    }
-    .link:hover{
-        text-decoration: none;
-        border-width: 3px;
-		color: #ff3e00;
-        font-weight: bold;
-    }
 </style>
