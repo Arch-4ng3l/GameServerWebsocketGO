@@ -126,7 +126,7 @@
     }
 
     .link:active {
-        background-color: #ff3e00;
+        background-color: #ff5f15;
         color: white;
     }
 

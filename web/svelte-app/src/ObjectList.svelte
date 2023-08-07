@@ -87,16 +87,16 @@ function goBack() {
 <h2>Objects</h2>
 <br>
 <br>
-<label for="">Name: </label>
+<label for="" class="label">Name: </label>
 <input name="name" type="text" id="name" class="in"/>
 
-<label for="x">X: </label>
+<label for="x" class="label">X: </label>
 <input name="x" type="text" id="x" value="0" class="in"/>
 
-<label for="y">Y: </label>
+<label for="y" class="label">Y: </label>
 <input name="y" type="text" id="y" value="0" class="in"/>
 
-<label for="z">Z: </label>
+<label for="z" class="label">Z: </label>
 <input name="z" type="text" id="z" value="0" class="in"/>
 <br>
 <button on:click={sendObject} class="send" value="send">send</button>
@@ -121,6 +121,10 @@ function goBack() {
 
 <style>
 
+.label {
+    font-weight: 350;
+}
+
 .in {
     border-radius: 10px;
 }
@@ -130,7 +134,7 @@ function goBack() {
 .obj {
     text-align: center;
     padding: 10px;
-    width: 5em;
+    width: 20%;
     outline: 3px;
     border-radius: 10px;
     border-style:solid;

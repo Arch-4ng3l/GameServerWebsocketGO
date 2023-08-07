@@ -115,26 +115,34 @@ func (psql *Postgres) GetUser(username string) *types.User {
 	return nil
 }
 
-func (psql *Postgres) GetObjects(out chan *types.Object, player *types.Object) error {
+func (psql *Postgres) GetObjects(out chan *types.Object, player *types.Object) {
 
 	query := `SELECT * FROM objects`
 
+	defer close(out)
+
 	rows, err := psql.DB.Query(query)
 	if err != nil {
-
-		return err
+		util.PrintError(err)
+		return
 	}
 
 	defer rows.Close()
+
 	id := 0
 	for rows.Next() {
+
 		object := types.Object{}
+
 		err = rows.Scan(&id, &object.Name, &object.X, &object.Y, &object.Z)
+
 		if err != nil {
+			util.PrintError(err)
 			continue
 		}
 
 		if object.Name == "" {
+			util.PrintLog("Got Empty Object")
 			continue
 		}
 		if util.CalcDistance(player, &object) <= types.RenderDistance {
@@ -143,9 +151,7 @@ func (psql *Postgres) GetObjects(out chan *types.Object, player *types.Object) e
 		}
 	}
 
-	close(out)
-
-	return nil
+	return
 }
 
 func (psql *Postgres) UpdateObject(object *types.Object) error {
@@ -184,11 +190,20 @@ func (psql *Postgres) GetObjectsWeb(startID int) ([]*types.Object, error) {
 
 func (psql *Postgres) GetAmountOfObjects() uint {
 	query := `
-	SELECT COUNT(*) FROM objects
+	SELECT COUNT(*) FROM objects 
 	`
 
 	var num uint
 	psql.DB.QueryRow(query).Scan(&num)
-	fmt.Println(num)
+
 	return uint(num)
+}
+
+func (psql *Postgres) DeleteObject(name string) error {
+	query := `
+		DELETE FROM objects WHERE "object_name"=$1
+	`
+	_, err := psql.DB.Exec(query, name)
+
+	return err
 }

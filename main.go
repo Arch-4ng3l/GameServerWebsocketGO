@@ -8,15 +8,17 @@ import (
 	"github.com/Arch-4ng3l/GoServerHololens/assets"
 	"github.com/Arch-4ng3l/GoServerHololens/server"
 	"github.com/Arch-4ng3l/GoServerHololens/storage"
+	"github.com/Arch-4ng3l/GoServerHololens/util"
 )
 
 func main() {
 	user, err := user.Current()
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	port := flag.String("p", "3000", "Port To Listen On")
+	logs := flag.Bool("l", true, "Activation of Loging")
 	flag.Parse()
 
 	fmt.Println("[*] Building Assets ZIP")
@@ -25,16 +27,11 @@ func main() {
 	fmt.Println("[*] Connecting To Database")
 	psql := storage.NewPostgres()
 	psql.Init()
-
-	//file, err := os.Create(user.HomeDir + "/Hololens/logs/" + time.Now().Format(time.DateOnly) + ".log")
-	if err != nil {
-		return
-	}
-	//os.Stdin = file
-	//os.Stdout = file
-	//os.Stderr = file
-
+	fmt.Println()
 	server := server.NewServer(psql, user.HomeDir)
 	server.Run(":" + *port)
+	if *logs {
+		util.ActivateLogs(user.HomeDir)
+	}
 
 }

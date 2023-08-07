@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/Arch-4ng3l/GoServerHololens/assets"
 	"github.com/Arch-4ng3l/GoServerHololens/storage"
@@ -198,6 +199,10 @@ func (s *Server) handleConns(conn *websocket.Conn) {
 
 	defer conn.Close()
 
+	if ok := s.conns[conn]; ok {
+		return
+	}
+
 	s.conns[conn] = true
 	str := fmt.Sprintf("New Connection => Connection Number %d", len(s.conns))
 	util.PrintLog(str)
@@ -221,17 +226,27 @@ func (s *Server) handleConn(conn *websocket.Conn) error {
 	defer s.closeConn(conn)
 
 	for {
+
 		if err = decoder.Decode(object); err != nil {
 
 			return err
 		}
+
 		if object.Name == "Player" {
 			err = s.handlePlayer(object, encoder)
 
 		} else if object.Name == "Web" {
+
 			err = s.handleWeb(int(object.X), encoder)
+
+		} else if strings.HasPrefix(object.Name, "Delete") {
+
+			err = s.handleDelete(object.Name)
+
 		} else {
+
 			err = s.handleObject(object)
+
 		}
 
 		if err != nil {
@@ -241,6 +256,11 @@ func (s *Server) handleConn(conn *websocket.Conn) error {
 
 	}
 
+}
+
+func (s *Server) handleDelete(name string) error {
+	cleanName := strings.ReplaceAll(name, "Delete", "")
+	return s.store.DeleteObject(cleanName)
 }
 
 func (s *Server) closeConn(conn *websocket.Conn) {
@@ -255,7 +275,7 @@ func (s *Server) initConn(encoder *json.Encoder, decoder *json.Decoder) error {
 	params := &types.Setting{}
 
 	if err := decoder.Decode(params); err != nil {
-		fmt.Println(err.Error())
+
 		return err
 	}
 	types.RenderDistance = params.RenderDistance
@@ -266,7 +286,7 @@ func (s *Server) initConn(encoder *json.Encoder, decoder *json.Decoder) error {
 	var arr [1]types.ObjectAmount
 	arr[0] = nums
 	if err := encoder.Encode(arr); err != nil {
-		fmt.Println(err.Error())
+
 		return err
 	}
 	return nil
@@ -287,8 +307,6 @@ func (s *Server) handlePlayer(player *types.Object, encoder *json.Encoder) error
 }
 
 func (s *Server) handleObject(object *types.Object) error {
-
-	fmt.Println(object.Name)
 
 	return s.store.UpdateObject(object)
 }

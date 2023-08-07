@@ -15,6 +15,15 @@ import (
 
 const TimeLayout = "15:04:05_2.01.2006"
 
+func ActivateLogs(homedir string) {
+	file, err := os.Create(homedir + "/Hololens/logs/" + time.Now().Format(time.DateOnly) + ".log")
+	if err != nil {
+		return
+	}
+	os.Stdout = file
+	os.Stderr = file
+}
+
 func PrintSuccess(str string) {
 	fmt.Println("[" + time.Now().Format(TimeLayout) + "] " + color.Green + color.Bold + "[*] " + str + color.Reset)
 }
@@ -45,6 +54,7 @@ func CreateJWT(username, password string) (string, error) {
 }
 
 func ValidateJWT(tokenString string) (*jwt.Token, error) {
+
 	secret := os.Getenv("JWT_SECRET")
 
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {

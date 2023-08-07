@@ -26,7 +26,7 @@
     <h2>Assets</h2>
     <br>
     <br>
-    <input  class="in" bind:this={fileIn} accept=".prefab" type="file" id="fileInput"/>
+    <input  class="in" bind:this={fileIn} type="file" id="fileInput"/>
     <br>
     <br>
     <button class="btn" on:click={handleSendFile}>Upload</button> 
