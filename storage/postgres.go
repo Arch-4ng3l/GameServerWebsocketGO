@@ -181,3 +181,14 @@ func (psql *Postgres) GetObjectsWeb(startID int) ([]*types.Object, error) {
 
 	return objects, nil
 }
+
+func (psql *Postgres) GetAmountOfObjects() uint {
+	query := `
+	SELECT COUNT(*) FROM objects
+	`
+
+	var num uint
+	psql.DB.QueryRow(query).Scan(&num)
+	fmt.Println(num)
+	return uint(num)
+}

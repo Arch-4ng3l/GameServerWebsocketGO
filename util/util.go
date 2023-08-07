@@ -13,7 +13,7 @@ import (
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
-const TimeLayout = "15:04:05 _2.01.2006"
+const TimeLayout = "15:04:05_2.01.2006"
 
 func PrintSuccess(str string) {
 	fmt.Println("[" + time.Now().Format(TimeLayout) + "] " + color.Green + color.Bold + "[*] " + str + color.Reset)

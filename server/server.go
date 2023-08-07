@@ -214,7 +214,7 @@ func (s *Server) handleConn(conn *websocket.Conn) error {
 	decoder := json.NewDecoder(conn)
 	encoder := json.NewEncoder(conn)
 
-	//s.initConn(encoder, decoder)
+	s.initConn(encoder, decoder)
 
 	object := &types.Object{}
 
@@ -255,11 +255,20 @@ func (s *Server) initConn(encoder *json.Encoder, decoder *json.Decoder) error {
 	params := &types.Setting{}
 
 	if err := decoder.Decode(params); err != nil {
+		fmt.Println(err.Error())
 		return err
 	}
-
 	types.RenderDistance = params.RenderDistance
 
+	nums := types.ObjectAmount{}
+
+	nums.Nums = s.store.GetAmountOfObjects()
+	var arr [1]types.ObjectAmount
+	arr[0] = nums
+	if err := encoder.Encode(arr); err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
 	return nil
 }
 

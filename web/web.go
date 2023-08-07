@@ -14,6 +14,7 @@ var HomeDir string
 
 func NewWebServer(store storage.Storage, homeDir string) *WebServer {
 	HomeDir = homeDir
+
 	return &WebServer{
 		store,
 	}

@@ -16,8 +16,13 @@ func BenchmarkGetObjects(b *testing.B) {
 	obj := &types.Object{}
 	obj.Name = "Player"
 	for n := 0; n < b.N; n++ {
+		objs := make(chan *types.Object)
 		randomObject(obj)
-		objs, err := store.GetObjects(obj)
+		go store.GetObjects(objs, obj)
+		var objects []*types.Object = make([]*types.Object, 0)
+		for object := range objs {
+			objects = append(objects, object)
+		}
 		if err != nil {
 			b.Fatal(err.Error())
 		}

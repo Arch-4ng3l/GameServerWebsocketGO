@@ -10,10 +10,14 @@ type Object struct {
 }
 
 type Setting struct {
-	RenderDistance float32 `json:"renderdistance"`
+	RenderDistance float32 `json:"nums"`
 }
 
 type User struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+type ObjectAmount struct {
+	Nums uint `json:"nums"`
 }
