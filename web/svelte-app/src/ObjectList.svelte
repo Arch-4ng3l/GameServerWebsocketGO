@@ -87,7 +87,7 @@ function goBack() {
 <h2>Objects</h2>
 <br>
 <br>
-<label for="" class="label">Name: </label>
+<label for="name" class="label">Name: </label>
 <input name="name" type="text" id="name" class="in"/>
 
 <label for="x" class="label">X: </label>
@@ -98,6 +98,7 @@ function goBack() {
 
 <label for="z" class="label">Z: </label>
 <input name="z" type="text" id="z" value="0" class="in"/>
+<br>
 <br>
 <button on:click={sendObject} class="send" value="send">send</button>
 <br>
@@ -121,16 +122,16 @@ function goBack() {
 
 <style>
 
-.label {
-    font-weight: 350;
-}
 
 .in {
+    width: 10%;
     border-radius: 10px;
 }
+
 .in:hover {
     border-color: #ff3e00;
 }
+
 .obj {
     text-align: center;
     padding: 10px;
@@ -141,6 +142,7 @@ function goBack() {
     border-color:black;
     margin: 10px;
 }
+
 .list {
     margin-left: 30%;
     width: 40%;
@@ -151,30 +153,35 @@ function goBack() {
     right: 1em;
     align-content: center;
 }
+
 .arrow {
     text-align: center;
     background: transparent;
     border-radius: 10px;
     transition: ease-in-out 0.2s;
 }
+
 .arrow:hover {
-    color: #ff3e00;
-    border-color: #ff3e00;
+    color: #273A7C;
+    border-color: #273A7C;
     font-weight: bold;
 }
+
 .send {
+    width: 10%;
     border-radius: 10px;
     transition: ease-in-out 0.2s;
 }
 .send:hover {
-    border-color: #ff3e00;
-    color : #ff3e00;
+    color: #273A7C;
+    border-width: 2px;
+    border-color: #273A7C;
     font-weight: bold;
 }
 
 label {
-    font-size: 20px;
-    color: #ff3e00;
-    font-weight: bold;
+    font-size: 2em;
+    color: #273A7C;
+    font-weight: 100;
 }
 </style>

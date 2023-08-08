@@ -111,6 +111,7 @@
         overflow: hidden;
         background-color: #333;
     }
+
     .link {
         float: left;
         color: #f2f2f2;
@@ -126,7 +127,7 @@
     }
 
     .link:active {
-        background-color: #ff5f15;
+        background-color: #273A7C;
         color: white;
     }
 
@@ -138,7 +139,7 @@
 	}
 
 	h1 {
-		color: #ff3e00;
+        color: #273A7C;
 		text-transform: uppercase;
 		font-size: 4em;
 		font-weight: 100;

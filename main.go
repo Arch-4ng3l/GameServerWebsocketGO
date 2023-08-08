@@ -27,7 +27,7 @@ func main() {
 	fmt.Println("[*] Connecting To Database")
 	psql := storage.NewPostgres()
 	psql.Init()
-	fmt.Println()
+
 	server := server.NewServer(psql, user.HomeDir)
 	server.Run(":" + *port)
 	if *logs {

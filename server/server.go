@@ -289,6 +289,7 @@ func (s *Server) initConn(encoder *json.Encoder, decoder *json.Decoder) error {
 
 		return err
 	}
+
 	return nil
 }
 
